@@ -25,11 +25,11 @@ mkdir /tmp/cloudimage -p
 cd /tmp/cloudimage
 wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
 echo "=============== CREATING VM 	==============="
-qm create $vmid --memory $memorycapacity --name $vmname --net0 virtio,bridge=vmbr0
+qm create $vmid --memory $memorycapacity --name $vmname --net0 virtio,bridge=vmbr0 --cores 2 --sockets 2 --vcpus 4
 echo "=============== IMPORTING DISK	==============="
 qm importdisk $vmid jammy-server-cloudimg-amd64-disk-kvm.img $storage -format raw
 echo "=============== ATTACHING DISK    ==============="
-qm set $vmid --scsihw virtio-scsi-pci --scsi0 /mnt/pve/${storage}/images/$vmid/vm-$vmid-disk-0.raw,discard=1,ssd=1
+qm set $vmid --scsihw virtio-scsi-pci --scsi0 /mnt/pve/${storage}/images/$vmid/vm-$vmid-disk-0.raw,discard=on,ssd=1
 echo "=============== CREATING CLOUDINIT==============="
 qm set $vmid --ide2 $storage:cloudinit
 echo "=============== SETTING BOOTDISK  ==============="
@@ -45,9 +45,10 @@ curl https://github.com/${githubusername}.keys | tee $githubusername.pub
 echo "=============== ADDING SSH KEYS  ================"
 qm set $vmid --sshkey $githubusername.pub
 echo "===============SETTING USER & PASS==============="
-qm set $vmid --ciuser $serverusername
-qm set $vmid --cipassword $cipassword
+qm set $vmid --ciuser $serverusername --cipassword $cipassword
 qm set $vmid --keyboard en-gb
 echo "=======VM CREATED WITH FOLLOWING CONFIG:========="
 qm config $vmid
+cd ~/
+rm -R /tmp/cloudimage
 echo "=============== SCRIPT COMPLETE ================="
